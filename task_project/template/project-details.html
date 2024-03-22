@@ -1,0 +1,251 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Corona Admin</title>
+  <!-- plugins:css -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+  </script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+  <link rel="stylesheet" href="{% static 'task/assets/vendors/mdi/css/materialdesignicons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'task/assets/vendors/css/vendor.bundle.base.css' %}">
+  <!-- endinject -->
+  <!-- Plugin css for this page -->
+  <link rel="stylesheet" href="{% static 'task/assets/vendors/select2/select2.min.css' %}">
+  <link rel="stylesheet" href="{% static 'task/assets/vendors/select2-bootstrap-theme/select2-bootstrap.min.css' %}">
+  <!-- End plugin css for this page -->
+  <!-- inject:css -->
+  <!-- endinject -->
+  <!-- Layout styles -->
+  <link rel="stylesheet" href="{% static 'task/assets/css/style.css' %}">
+  <!-- End layout styles -->
+  <link rel="shortcut icon" href="{% static 'task/assets/images/favicon.png' %}" />
+</head>
+
+<body>
+  <div class="container-scroller">
+    <!-- partial:../../partials/_sidebar.html -->
+    <nav class="sidebar sidebar-offcanvas" id="sidebar">
+      <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+        <a class="sidebar-brand brand-logo" href="index.html"><img src="{% static 'task/assets/images/logo.svg' %}"
+            alt="logo" /></a>
+        <a class="sidebar-brand brand-logo-mini" href="index.html"><img
+            src="{% static 'task/assets/images/logo-mini.svg' %}" alt="logo" /></a>
+      </div>
+      {% include 'dashboard-sidebar.html' %}
+    </nav>
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:../../partials/_navbar.html -->
+
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="page-header">
+            <h3 class="page-title"> Class Project </h3>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Forms</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Form elements</li>
+              </ol>
+            </nav>
+          </div>
+          <div class="row">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card">
+                {% if detail %}
+                <div class="card-body">
+                  <h4 class="card-title">{{detail.name}}</h4>
+                  <div class="form-group row">
+                    <label for="exampleInputUsername2" class="col-sm-3 col-form-label">Project Name</label>
+                    <div class="col-sm-9">
+                      {{detail.name}}
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label for="exampleInputEmail2" class="col-sm-3 col-form-label">Description</label>
+                    <div class="col-sm-9">
+                      {{detail.description}}
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label for="exampleInputMobile" class="col-sm-3 col-form-label">Deadline</label>
+                    <div class="col-sm-9">
+                      {{detail.due_date}}
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label for="exampleInputPassword2" class="col-sm-3 col-form-label">Status</label>
+                    <div class="col-sm-9">
+                      {{detail.status}}
+                    </div>
+                  </div>
+                  <div>
+                    <button type="button" class="m-3 btn btn-success" data-bs-toggle="modal"
+                      data-bs-target="#exampleModal" data-bs-whatever="@mdo">Assign Tasks to collaborators</button>
+
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                      aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Create Subtask</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <form action="." method="post">
+                              {% csrf_token %}
+                              <div class="mb-3">
+                                <label for="recipient-name" class="col-form-label">{{task.name.label_tag}}</label>
+                                {{task.name}}
+                              </div>
+                              <div class="mb-3">
+                                <label for="message-text" class="col-form-label">{{task.assignees.label_tag}}</label>
+                                {{task.assignees}}
+                              </div>
+
+                              <div class="mb-3">
+                                <label for="message-text" class="col-form-label">Deadline:</label>
+                                {{task.due_date}}
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Create task</button>
+                              </div>
+                          </div>
+                          </form>
+                        </div>
+
+                      </div>
+                    </div>
+                    <div class="col-lg-12 grid-margin stretch-card">
+                      <div class="card">
+                        <div class="card-body">
+                          <h4 class="card-title">Collaborators</h4>
+                          <div class="col-12 grid-margin stretch-card">
+                            <div class="card">
+                              <div class="card-body">
+                                {% if messages %}
+                                {% for message in messages %}
+                                <div class="alert alert-info">{{message}}</div>
+                                {% endfor %}
+                                {% endif %}
+
+
+                                <form method="post" action="." class="form-inline">
+                                  {% csrf_token %}
+                                  <div class="input-group mb-2 mr-sm-2">
+                                    <div class="input-group-prepend">
+                                      <div class="input-group-text">@</div>
+                                    </div>
+                                    <input type="email" name="email" class="form-control"
+                                      id="inlineFormInputGroupUsername2" placeholder="Collaborator Email">
+                                  </div>
+                                  <button type="submit" class="btn btn-success mb-2">Invite</button>
+                                </form>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="table-responsive">
+                            <table class="table table-striped">
+                              <thead>
+                                <tr>
+                                  <th> User </th>
+                                  <th></th>
+                                  <th> Email </th>
+                                  <th> Status </th>
+                                  <th> Task </th>
+                                  <th> Deadline </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {% for task in subtask %}
+                                {% for collaborator in task.assignees.all %}
+                                <tr>
+                                  <td class="py-1">
+                                    <img src="{% static 'task/assets/images/faces-clipart/pic-1.png' %}" alt="image" />
+                                  </td>
+                                  {% if forloop.first %}
+                                  <td rowspan="{{ task.assignees.count }}" ></td>
+                                  {% endif %}
+                                  <td>{{ collaborator.email }}</td>
+                                  <td>
+                                    {{task.status}}
+                                  </td>
+                                  <td>{{task.name}}</td>
+                                  <td>{{task.due_date|date:"M d, Y"}}</td>
+                                </tr>
+                                {% endfor %}
+                                {% endfor %}
+
+                              </tbody>
+                            </table>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <button type="submit" class="btn btn-primary mr-2 mt-5">Edit Project</button>
+                  <button class="btn btn-danger mt-5">Delete Project</button>
+
+                </div>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <!-- content-wrapper ends -->
+        <!-- partial:../../partials/_footer.html -->
+        <footer class="footer">
+          <div class="d-sm-flex justify-content-center justify-content-sm-between">
+            <span class="text-muted d-block text-center text-sm-left d-sm-inline-block">Copyright © bootstrapdash.com
+              2020</span>
+            <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center"> Free <a
+                href="https://www.bootstrapdash.com/bootstrap-admin-template/" target="_blank">Bootstrap admin
+                templates</a> from Bootstrapdash.com</span>
+          </div>
+        </footer>
+        <!-- partial -->
+      </div>
+      <!-- main-panel ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+  <!-- plugins:js -->
+  <script src="{% static 'task/assets/vendors/js/vendor.bundle.base.js' %}"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page -->
+  <script src="{% static 'task/assets/vendors/select2/select2.min.js' %}"></script>
+  <script src="{% static 'task/assets/vendors/typeahead.js/typeahead.bundle.min.js' %}"></script>
+  <!-- End plugin js for this page -->
+  <!-- inject:js -->
+  <script src="{% static 'task/assets/js/off-canvas.js' %}"></script>
+  <script src="{% static 'task/assets/js/hoverable-collapse.js' %}"></script>
+  <script src="{% static 'task/assets/js/misc.js' %}"></script>
+  <script src="{% static 'task/assets/js/settings.js' %}"></script>
+  <script src="{% static 'task/assets/js/todolist.js' %}"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page -->
+  <script src="{% static 'task/assets/js/file-upload.js' %}"></script>
+  <script src="{% static 'task/assets/js/typeahead.js' %}"></script>
+  <script src="{% static 'task/assets/js/select2.js' %}"></script>
+  <!-- End custom js for this page -->
+
+</body>
+
+</html>
