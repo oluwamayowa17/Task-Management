@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from .urls import *
-from django.http import JsonResponse
+from django.urls import reverse, reverse_lazy
+from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
@@ -9,7 +8,7 @@ from django.views.generic import TemplateView
 from .forms import RegistrationForm, LoginForm, ToDOForm, ProjectForm, TaskForm
 from .models import *
 from django.utils.safestring import mark_safe
-from .token import account_activation_token
+from .token import account_activation_token, collaborator_token
 
 from django.utils.html import strip_tags
 from django.conf import settings
@@ -35,6 +34,7 @@ def activate(request, uidb64, token):
         user = None
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
+        user.is_staff = True
         user.save()
 
         messages.success(request, 'Thank you for email confirmaton, you can now login your account')
@@ -43,6 +43,22 @@ def activate(request, uidb64, token):
         messages.error(request, 'Activation link invalid!')
 
     return redirect('/')
+
+def activate_collaborator(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and collaborator_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        # Redirect to dashboard or show a success message
+        return HttpResponseRedirect(reverse_lazy('taskapp:user_login'))
+    else:
+        # Show an error message or redirect to home
+        return redirect('/')
 
 def activateEmail(request, user, to_email):
     mail_subject = 'Activate Your Account'
@@ -95,14 +111,20 @@ def user_login(request):
         user_log = LoginForm()
     return render(request, 'login.html', {'login': user_log})
 
+def user_logout(request):
+    logout(request)
+    return redirect('taskapp:user_login')
+
 def dashboard(request):
     user = request.user  # Assuming request.user is authenticated
     to_do_list = ToDOList.objects.filter(user=user)
     # project = Project.objects.filter(user=user).order_by('-created')
-    projects = Project.objects.annotate(num_subtasks=models.Count('subtask')).all()
+    projects = Project.objects.filter(user=request.user).distinct()
+
+    # Count collaborators for each project
     for project in projects:
         project.num_collaborators = Collaborator.objects.filter(project=project).count()
-
+    
     if request.method == "POST":
         task = ToDOForm(request.POST)
         if task.is_valid():
@@ -112,10 +134,27 @@ def dashboard(request):
     else:
         task = ToDOForm()
 
+    project_progress = []
+    for project in projects:
+        completed_tasks = SubTask.objects.filter(task_id=project.id, status='COMPLETED').count()
+        total_tasks = SubTask.objects.filter(task_id=project.id).count()
+        
+        if total_tasks > 0:
+            progress = (completed_tasks / total_tasks) * 100
+        else:
+            if project.status == 'COMPLETED':
+                progress = 100  # If there are no total tasks and project status is completed, progress is 100%
+            elif project.status == 'IN PROGRESS':
+                progress = 50   # If there are no total tasks and project status is in progress, progress is 50%
+            else:
+                progress = 0  
+
+        project_progress.append({'project': project, 'progress': progress})
     context = {
         'task': task,
         'to_do_list': to_do_list,
         'projects':projects,
+        'project_progress':project_progress,
         # 'collab':collab,
     }
     return render(request, 'dashboard.html', context)
@@ -173,6 +212,7 @@ def add_project(request):
 def project_detail(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     subtasks = SubTask.objects.filter(task_id=project_id)
+
     if request.method == 'POST':
         # Handle task creation
         task_form = TaskForm(request.POST)
@@ -184,49 +224,61 @@ def project_detail(request, project_id):
             task_form.save_m2m()
             messages.success(request, 'Task successfully assigned to collaborator.')
 
-       
         # Handle collaborator invitation
         email = request.POST.get('email')
         if email:
             project_link = request.build_absolute_uri(reverse('taskapp:project_detail', kwargs={'project_id': project_id}))
             mail_subject = f"T.A.S.X.Y: You've been added as a collaborator to project: {project.name}"
+            
+            user, created = User.objects.get_or_create(email=email)
+            if created:
+                user.is_active = False  # Collaborator needs to activate their account
+                user.save()
+
+            # Render email template
+            mail_context = {
+                'domain': get_current_site(request).domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # Use project ID for token
+                'token': collaborator_token.make_token(user),  # Use logged-in user for token
+                'protocol': "https" if request.is_secure() else "http",
+                'email': email,
+                'project_name': project.name, 
+                'project_link': project_link,
+            }
+            # mail_message = render_to_string('mail-template.html', mail_context)
+
+            # Construct email message
             from_email = settings.EMAIL_HOST_USER
             recipient_list = [email]
-            html_message = render_to_string('collaborator-email-template.html', {'email': email, 'project_name': project.name, 'project_link': project_link})
+            html_message = render_to_string('collaborator-email-template.html', mail_context)
+            plain_text = strip_tags(html_message)
 
-            # plain_text = f"You've been added as a collaborator to project: {project.name}\n"
-           
-            plain_text =strip_tags(html_message)
-            plain_text += f"Project URL: {project_link}" 
             try:
                 existing_collaborator = Collaborator.objects.filter(email=email, project=project).first()
                 if existing_collaborator:
                     messages.error(request, f'A collaborator with the email {email} already exists for this project.')
-                    return redirect('taskapp:project_detail', project_id=project_id)
-
-                email_message = EmailMessage(mail_subject, plain_text, from_email, to=recipient_list)
-                email_message.send()
-                
-                Collaborator.objects.create(email=email, project=project)
-                messages.success(request, 'Invite sent and collaborator added!')
+                else:
+                    email_message = EmailMessage(mail_subject, plain_text, from_email, to=recipient_list)
+                    email_message.send()
+                    
+                    Collaborator.objects.create(email=email, project=project)
+                    
+                    
+                    messages.success(request, 'Invite sent and collaborator added!')
             except (BadHeaderError, Exception) as e:
                 messages.error(request, f'Could not invite collaborator: {str(e)}')
 
-        return render(request, 'project-details.html', {'detail': project, 'subtask': subtasks, 'task': task_form})
+        return redirect('taskapp:project_detail', project_id=project_id)
     
     else:
         task_form = TaskForm()
 
-    context={
+    context = {
         'detail': project,
         'subtask': subtasks,
         'task': task_form,
     }
     return render(request, 'project-details.html', context)
-
-
-
-        
 
 
 

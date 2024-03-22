@@ -56,6 +56,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.user_name
     
+    def is_project_user(self):
+        """
+        Method to determine the project user role.
+        """
+        if self.is_staff and self.is_superuser:
+            return "Administrator"
+        elif self.is_staff:
+            return "Project Leader"
+        elif self.is_collaborator:
+            return "Collaborator"
+        else:
+            return "Regular User"
+    
 
 class Project(models.Model):
     TO_DO = "PENDING"

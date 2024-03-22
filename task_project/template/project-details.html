@@ -87,7 +87,7 @@
                   <div class="form-group row">
                     <label for="exampleInputPassword2" class="col-sm-3 col-form-label">Status</label>
                     <div class="col-sm-9">
-                      {{detail.status}}
+                      <label class="badge{% if detail.status == 'PENDING' %} badge-danger {% elif detail.status == 'IN PROGRESS' %} badge-warning {% elif detail.status == 'COMPLETED' %} badge-success {% endif %}">{{ detail.status }}</label>
                     </div>
                   </div>
                   <div>
@@ -180,7 +180,7 @@
                                   {% endif %}
                                   <td>{{ collaborator.email }}</td>
                                   <td>
-                                    {{task.status}}
+                                    <label class="badge{% if task.status == 'PENDING' %} badge-danger {% elif task.status == 'ON IT' %} badge-warning {% elif task.status == 'COMPLETED' %} badge-success {% endif %}">{{ task.status }}</label>
                                   </td>
                                   <td>{{task.name}}</td>
                                   <td>{{task.due_date|date:"M d, Y"}}</td>

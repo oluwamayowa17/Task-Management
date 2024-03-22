@@ -193,6 +193,8 @@
                           </div>
                         </a>
                             {% endfor %}
+                            {% else %}
+                            <h3 class="card-title mb-1">No Open projects available</h3>                    
                           {% endif %}
                         </div>
                       </div>
@@ -206,33 +208,36 @@
               <div class="col-12 grid-margin">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Bordered table</h4>
-                    <p class="card-description"> Add class <code>.table-bordered</code>
+                    <h4 class="card-title">View Progress</h4>
                     </p>
                     <div class="table-responsive">
                       <table class="table table-bordered">
                         <thead>
                           <tr>
                             <th> # </th>
-                            <th> First name </th>
+                            <th> Project Name </th>
                             <th> Progress </th>
-                            <th> Amount </th>
+                            <th> Status </th>
                             <th> Deadline </th>
                           </tr>
                         </thead>
                         <tbody>
+                          {% if project_progress %}
+                          {% for progress in project_progress%}
                           <tr>
                             <td> 1 </td>
-                            <td> Herman Beck </td>
+                            <td> {{progress.project.name}} </td>
                             <td>
                               <div class="progress">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar {% if progress.progress < 50 %}bg-danger{% elif progress.progress < 75 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ progress.progress }}%" aria-valuenow="{{ progress.progress }}" aria-valuemin="0" aria-valuemax="100">{{progress.progress}}%</div>
                               </div>
                             </td>
-                            <td> $ 77.99 </td>
-                            <td> May 15, 2015 </td>
+                            <td> {{progress.project.status}} </td>
+                            <td> {{progress.project.due_date|date:"M d, Y"}} </td>
                           </tr>
-                          <tr>
+                          {% endfor %}
+                          {% endif %}
+                          <!-- <tr>
                             <td> 2 </td>
                             <td> Messsy Adam </td>
                             <td>
@@ -276,6 +281,7 @@
                             <td> $ 160.25 </td>
                             <td> May 03, 2015 </td>
                           </tr>
+
                           <tr>
                             <td> 6 </td>
                             <td> John Doe </td>
@@ -297,7 +303,7 @@
                             </td>
                             <td> $ 150.00 </td>
                             <td> June 16, 2015 </td>
-                          </tr>
+                          </tr> -->
                         </tbody>
                       </table>
                     </div>

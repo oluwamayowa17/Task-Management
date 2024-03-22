@@ -8,3 +8,13 @@ class AccountActivationTokenGenerator(PasswordResetTokenGenerator):
         )
     
 account_activation_token = AccountActivationTokenGenerator()
+
+
+class CollaboratorTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return (
+            str(user.pk) + str(timestamp) +
+            str(user.is_collaborator)
+        )
+
+collaborator_token = CollaboratorTokenGenerator()
