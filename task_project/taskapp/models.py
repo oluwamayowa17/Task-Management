@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 class CustomAccountManager(BaseUserManager):
     def create_superuser(self, email, user_name, password, **other_fields):
@@ -99,6 +100,8 @@ class Collaborator(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     email = models.EmailField(null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    created = models.DateTimeField(default=timezone.now)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('user', 'project', )

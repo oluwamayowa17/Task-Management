@@ -52,7 +52,7 @@
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="page-header">
-            <h3 class="page-title"> Class Project </h3>
+            <h3 class="page-title"> {{detail.name}} </h3>
             <nav aria-label="breadcrumb">
               <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="#">Forms</a></li>
@@ -90,91 +90,20 @@
                       <label class="badge{% if detail.status == 'PENDING' %} badge-danger {% elif detail.status == 'IN PROGRESS' %} badge-warning {% elif detail.status == 'COMPLETED' %} badge-success {% endif %}">{{ detail.status }}</label>
                     </div>
                   </div>
-                  {% if detail.status == 'PENDING' %}
-                  <form action="#" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="m-3 btn btn-danger">Start Project</button>
-                </form>
-                {% endif %}
-                  {% if detail.status == 'IN PROGRESS' %}
-                  <form action="#" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="m-3 btn btn-success">Complete Project</button>
-                </form>
-                {% endif %}
                   <div>
-                    <button type="button" class="m-3 btn btn-success" data-bs-toggle="modal"
-                      data-bs-target="#exampleModal" data-bs-whatever="@mdo">Assign Tasks to collaborators</button>
-
-                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                      aria-hidden="true">
-                      <div class="modal-dialog">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">Create Subtask</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                            <form action="." method="post">
-                              
-                              <div class="mb-3">
-                                <label for="recipient-name" class="col-form-label">{{task.name.label_tag}}</label>
-                                {{task.name}}
-                              </div>
-                              <div class="mb-3">
-                                <label for="message-text" class="col-form-label">{{task.assignees.label_tag}}</label>
-                                {{task.assignees}}
-                              </div>
-
-                              <div class="mb-3">
-                                <label for="message-text" class="col-form-label">Deadline:</label>
-                                {{task.due_date}}
-                              </div>
-                              {% csrf_token %}
-                              <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Create task</button>
-                              </div>
-                          </div>
-                          </form>
-                        </div>
-
-                      </div>
-                    </div>
+                   
                     <div class="col-lg-12 grid-margin stretch-card">
                       <div class="card">
                         <div class="card-body">
                           <h4 class="card-title">Collaborators</h4>
                           <div class="col-12 grid-margin stretch-card">
-                            <div class="card">
-                              <div class="card-body">
-                                {% if messages %}
-                                {% for message in messages %}
-                                <div class="alert alert-info">{{message}}</div>
-                                {% endfor %}
-                                {% endif %}
-
-
-                                <form method="post" action="." class="form-inline">
-                                  {% csrf_token %}
-                                  <div class="input-group mb-2 mr-sm-2">
-                                    <div class="input-group-prepend">
-                                      <div class="input-group-text">@</div>
-                                    </div>
-                                    <input type="email" name="email" class="form-control"
-                                      id="inlineFormInputGroupUsername2" placeholder="Collaborator Email">
-                                  </div>
-                                  <button type="submit" class="btn btn-success mb-2">Invite</button>
-                                </form>
-                              </div>
-                            </div>
+                            
                           </div>
                           <div class="table-responsive">
                             <table class="table table-striped">
                               <thead>
                                 <tr>
                                   <th> User </th>
-                                  <th></th>
                                   <th> Email </th>
                                   <th> Status </th>
                                   <th> Task </th>
@@ -182,23 +111,19 @@
                                 </tr>
                               </thead>
                               <tbody>
-                                {% for task in subtask %}
-                                {% for collaborator in task.assignees.all %}
+                                {% for task in assigned_tasks %}
                                 <tr>
                                   <td class="py-1">
                                     <img src="{% static 'task/assets/images/faces-clipart/pic-1.png' %}" alt="image" />
                                   </td>
-                                  {% if forloop.first %}
-                                  <td rowspan="{{ task.assignees.count }}" ></td>
-                                  {% endif %}
-                                  <td>{{ collaborator.email }}</td>
+                                  
+                                  <td>{{task.assignees.first.email }}</td>
                                   <td>
                                     <label class="badge{% if task.status == 'PENDING' %} badge-danger {% elif task.status == 'ON IT' %} badge-warning {% elif task.status == 'COMPLETED' %} badge-success {% endif %}">{{ task.status }}</label>
                                   </td>
                                   <td>{{task.name}}</td>
                                   <td>{{task.due_date|date:"M d, Y"}}</td>
                                 </tr>
-                                {% endfor %}
                                 {% endfor %}
 
                               </tbody>

@@ -53,7 +53,7 @@
                     <div class="row">
                       <div class="col-9">
                         <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">20</h3>
+                          <h3 class="mb-0">{{all_project}}</h3>
                         </div>
                       </div>
                       <div class="col-3">
@@ -72,16 +72,16 @@
                     <div class="row">
                       <div class="col-9">
                         <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">15</h3>
+                          <h3 class="mb-0">{{in_progress}}</h3>
                         </div>
                       </div>
                       <div class="col-3">
-                        <div class="icon icon-box-success">
-                          <span class="mdi mdi-arrow-top-right icon-item"></span>
+                        <div class="icon icon-box-warning">
+                          <span class="mdi mdi-check icon-item"></span>
                         </div>
                       </div>
                     </div>
-                    <h6 class="text-muted font-weight-normal">Pending projects</h6>
+                    <h6 class="text-muted font-weight-normal">In progress</h6>
                   </div>
                 </div>
               </div>
@@ -91,16 +91,16 @@
                     <div class="row">
                       <div class="col-9">
                         <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">1</h3>
+                          <h3 class="mb-0">{{pending}}</h3>
                         </div>
                       </div>
                       <div class="col-3">
                         <div class="icon icon-box-danger">
-                          <span class="mdi mdi-arrow-bottom-left icon-item"></span>
+                          <span class="mdi mdi-close icon-item"></span>
                         </div>
                       </div>
                     </div>
-                    <h6 class="text-muted font-weight-normal">Uncompleted</h6>
+                    <h6 class="text-muted font-weight-normal">Pending Projects</h6>
                   </div>
                 </div>
               </div>
@@ -110,12 +110,12 @@
                     <div class="row">
                       <div class="col-9">
                         <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">5</h3>
+                          <h3 class="mb-0">{{completed}}</h3>
                         </div>
                       </div>
                       <div class="col-3">
                         <div class="icon icon-box-success ">
-                          <span class="mdi mdi-arrow-top-right icon-item"></span>
+                          <span class="mdi mdi-check icon-item"></span>
                         </div>
                       </div>
                     </div>
@@ -173,7 +173,7 @@
                         <div class="preview-list">
                           {% if projects %}
                             {% for project in projects %}
-                            <a href="{% url 'taskapp:project_detail' project.id %}" style="text-decoration: none;">
+                            <a href="{% url 'taskapp:project_detail' project.id %}" style="text-decoration: none; color: #fff;">
                           <div class="preview-item border-bottom">
                             <div class="preview-thumbnail">
                               <div class="preview-icon bg-primary">
@@ -187,7 +187,7 @@
                               </div>
                               <div class="mr-auto text-sm-right pt-2 pt-sm-0">
                                 <p class="text-muted">{{project.created|timesince}} ago</p>
-                                <p class="text-muted mb-0">{{ project.num_subtasks }} tasks, {{ project.num_collaborators }} collaborators </p>
+                                <p class="text-muted mb-0">{{ project.num_task }} tasks, {{ project.num_collaborators }} collaborators </p>
                               </div>
                             </div>
                           </div>
@@ -225,7 +225,7 @@
                           {% if project_progress %}
                           {% for progress in project_progress%}
                           <tr>
-                            <td> 1 </td>
+                            <td> {{ forloop.counter }} </td>
                             <td> {{progress.project.name}} </td>
                             <td>
                               <div class="progress">

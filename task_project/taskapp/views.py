@@ -7,6 +7,8 @@ from django.contrib.auth import login, logout, authenticate
 from django.views.generic import TemplateView
 from .forms import RegistrationForm, LoginForm, ToDOForm, ProjectForm, TaskForm
 from .models import *
+from django.db.models import Count, Q
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.safestring import mark_safe
 from .token import account_activation_token, collaborator_token
 
@@ -118,12 +120,15 @@ def user_logout(request):
 def dashboard(request):
     user = request.user  # Assuming request.user is authenticated
     to_do_list = ToDOList.objects.filter(user=user)
-    # project = Project.objects.filter(user=user).order_by('-created')
-    projects = Project.objects.filter(user=request.user).distinct()
-
+    projects = Project.objects.filter(user=request.user).distinct().order_by('-created')[:5]
+    all_projects = projects.count()
+    pending = Project.objects.filter(user=request.user, status='PENDING').count()
+    in_progress = Project.objects.filter(user=request.user, status='IN PROGRESS').count()
+    completed = Project.objects.filter(user=request.user, status='COMPLETED').count()
     # Count collaborators for each project
     for project in projects:
         project.num_collaborators = Collaborator.objects.filter(project=project).count()
+        project.num_task = SubTask.objects.filter(task=project).count()
     
     if request.method == "POST":
         task = ToDOForm(request.POST)
@@ -155,7 +160,10 @@ def dashboard(request):
         'to_do_list': to_do_list,
         'projects':projects,
         'project_progress':project_progress,
-        # 'collab':collab,
+        'all_project':all_projects,
+        'pending':pending,
+        'in_progress':in_progress,
+        'completed':completed,
     }
     return render(request, 'dashboard.html', context)
 
@@ -212,30 +220,35 @@ def add_project(request):
 def project_detail(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     subtasks = SubTask.objects.filter(task_id=project_id)
+    task_form = TaskForm(user=request.user)
 
-    if request.method == 'POST':
-        # Handle task creation
-        task_form = TaskForm(request.POST)
-        if task_form.is_valid():
-            new_task = task_form.save(commit=False)
-            new_task.user = request.user
-            new_task.task = project
-            new_task.save()
-            task_form.save_m2m()
-            messages.success(request, 'Task successfully assigned to collaborator.')
+    # Handle task creation
+    task_form = TaskForm(request.POST, user=request.user)
+    if task_form.is_valid():
+        new_task = task_form.save(commit=False)
+        new_task.user = request.user
+        new_task.task = project
+        new_task.save()
+        task_form.save_m2m()
+        messages.success(request, 'Task successfully assigned to collaborator.')
 
-        # Handle collaborator invitation
-        email = request.POST.get('email')
-        if email:
+    # Handle collaborator invitation
+    email = request.POST.get('email')
+    if email:
+        # Check if the user with the provided email already exists
+        user, created = User.objects.get_or_create(email=email)
+        if created:
+            user.is_active = False  # Collaborator needs to activate their account
+            user.save()
+
+        # Check if the collaborator already exists for the project
+        existing_collaborator = Collaborator.objects.filter(email=email, project=project).first()
+        if existing_collaborator:
+            messages.error(request, f'A collaborator with the email {email} already exists for this project.')
+        else:
+            # Collaborator does not exist, create new collaborator record and send invitation
             project_link = request.build_absolute_uri(reverse('taskapp:project_detail', kwargs={'project_id': project_id}))
             mail_subject = f"T.A.S.X.Y: You've been added as a collaborator to project: {project.name}"
-            
-            user, created = User.objects.get_or_create(email=email)
-            if created:
-                user.is_active = False  # Collaborator needs to activate their account
-                user.save()
-
-            # Render email template
             mail_context = {
                 'domain': get_current_site(request).domain,
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),  # Use project ID for token
@@ -245,41 +258,66 @@ def project_detail(request, project_id):
                 'project_name': project.name, 
                 'project_link': project_link,
             }
-            # mail_message = render_to_string('mail-template.html', mail_context)
-
-            # Construct email message
-            from_email = settings.EMAIL_HOST_USER
-            recipient_list = [email]
             html_message = render_to_string('collaborator-email-template.html', mail_context)
             plain_text = strip_tags(html_message)
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [email]
 
             try:
-                existing_collaborator = Collaborator.objects.filter(email=email, project=project).first()
-                if existing_collaborator:
-                    messages.error(request, f'A collaborator with the email {email} already exists for this project.')
-                else:
-                    email_message = EmailMessage(mail_subject, plain_text, from_email, to=recipient_list)
-                    email_message.send()
-                    
-                    Collaborator.objects.create(email=email, project=project)
-                    
-                    
-                    messages.success(request, 'Invite sent and collaborator added!')
+                email_message = EmailMessage(mail_subject, plain_text, from_email, to=recipient_list)
+                email_message.send()
+                Collaborator.objects.create(user=user, email=email, project=project)
+                messages.success(request, 'Invite sent and collaborator added!')
             except (BadHeaderError, Exception) as e:
                 messages.error(request, f'Could not invite collaborator: {str(e)}')
 
         return redirect('taskapp:project_detail', project_id=project_id)
     
-    else:
-        task_form = TaskForm()
-
+    if request.method == 'POST':
+        # Update the project status
+        if project.status == 'PENDING':
+            project.status = 'IN PROGRESS'
+            project.save()
+            messages.success(request, 'Project started successfully!')
+       
     context = {
         'detail': project,
         'subtask': subtasks,
         'task': task_form,
     }
     return render(request, 'project-details.html', context)
+from django.db.models import Count
+
+def collaboration_view(request):
+    user = request.user
+    
+    # Get all projects where the user is a collaborator
+    collaborator_projects = Collaborator.objects.filter(user=user)
+
+    # Fetch project details for the collaborator's projects
+    projects = Project.objects.filter(id__in=collaborator_projects.values_list('project', flat=True))
+
+    # Get the number of tasks assigned to the collaborator
+    projects = projects.annotate(num_tasks=Count('subtask', filter=Q(subtask__assignees__in=collaborator_projects)))
 
 
+    context = {
+        'projects': projects,
+        'collaborations': collaborator_projects,
+    }
 
+    return render(request, 'collaboration.html', context)
+
+def collaboration_details(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    collaborator_email = request.user.email  # Assuming the collaborator's email is stored in the User model
+
+    # Retrieve subtasks assigned to the collaborator for the specified project
+    assigned_tasks = SubTask.objects.filter(assignees__email=collaborator_email, task=project)
+
+    context = {
+        'detail':project,
+        'assigned_tasks': assigned_tasks,
+    }
+    return render(request, 'collaboration-details.html', context)
 

@@ -98,6 +98,13 @@ class ProjectForm(forms.ModelForm):
 
 
 class TaskForm(forms.ModelForm):
+    def __init__(self, *args, user=None, project=None, **kwargs):
+        super(TaskForm, self).__init__(*args, **kwargs)
+        if user and project:
+            # Filter collaborators based on the project and user
+            invited_collaborators = Collaborator.objects.filter(project=project, user=user)
+            self.fields['assignees'].queryset = invited_collaborators
+            
     class Meta:
         model = SubTask
         fields = ['name', 'assignees', 'due_date', ]
@@ -106,5 +113,4 @@ class TaskForm(forms.ModelForm):
             'assignees': forms.CheckboxSelectMultiple(),
             'due_date': forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'}), 
         }
-
 
