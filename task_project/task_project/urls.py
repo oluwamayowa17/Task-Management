@@ -19,4 +19,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('taskapp.urls', namespace='taskapp')),
+    path('', include('account.urls', namespace='account')),
+    path('', include('collab.urls', namespace='collab')),
 ]

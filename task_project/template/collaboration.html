@@ -238,28 +238,5 @@
     <script src="{% static 'task/assets/js/dashboard.js' %}"></script>
     <!-- End custom js for this page -->
 
-    <script>
-      // Add event listener to checkboxes
-      document.querySelectorAll('.checkbox').forEach(function(checkbox) {
-          checkbox.addEventListener('change', function() {
-              var taskId = this.getAttribute('data-task-id');
-              var isChecked = this.checked;
-              
-              // Send AJAX request to update task completion status
-              var xhr = new XMLHttpRequest();
-              xhr.open('POST', '/update-task/' + taskId + '/');
-              xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
-              xhr.setRequestHeader('Content-Type', 'application/json');
-              xhr.onload = function() {
-                  if (xhr.status === 200) {
-                      console.log('Task updated successfully');
-                  } else {
-                      console.error('Failed to update task');
-                  }
-              };
-              xhr.send(JSON.stringify({ completed: isChecked }));
-          });
-      });
-  </script>
   </body>
 </html>

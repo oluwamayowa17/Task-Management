@@ -1,18 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-</head>
 <body>
-    <p>Hello {{ email }},</p>
+    <p>Hello,</p>
 
     <p>You've been added as a collaborator to the project: <strong>{{ project_name }}</strong>. You can start collaborating right away!</p>
 
     <p>Visit the project to start collaborating. </p>
 
-    http://{{domain}}{% url 'taskapp:activate_collaborator' uidb64=uid token=token %}
+    {{project_link}}
 
 
     <p>Thank you,</p>

@@ -12,6 +12,7 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
   </script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    
     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
@@ -122,8 +123,8 @@
                                 {{task.name}}
                               </div>
                               <div class="mb-3">
-                                <label for="message-text" class="col-form-label">{{task.assignees.label_tag}}</label>
-                                {{task.assignees}}
+                                <label for="message-text" class="col-form-label">{{task.collaborator.label_tag}}</label>
+                                {{task.collaborator}}
                               </div>
 
                               <div class="mb-3">
@@ -145,12 +146,13 @@
                       <div class="card">
                         <div class="card-body">
                           <h4 class="card-title">Collaborators</h4>
+                          {% if request.user == detail.user %}
                           <div class="col-12 grid-margin stretch-card">
                             <div class="card">
                               <div class="card-body">
                                 {% if messages %}
                                 {% for message in messages %}
-                                <div class="alert alert-info">{{message}}</div>
+                                <div class="alert {{message.tags}}">{{message}}</div>
                                 {% endfor %}
                                 {% endif %}
 
@@ -169,6 +171,7 @@
                               </div>
                             </div>
                           </div>
+                          {% endif %}
                           <div class="table-responsive">
                             <table class="table table-striped">
                               <thead>
@@ -183,7 +186,7 @@
                               </thead>
                               <tbody>
                                 {% for task in subtask %}
-                                {% for collaborator in task.assignees.all %}
+                                {% for collaborator in task.collaborator.all %}
                                 <tr>
                                   <td class="py-1">
                                     <img src="{% static 'task/assets/images/faces-clipart/pic-1.png' %}" alt="image" />
@@ -191,7 +194,7 @@
                                   {% if forloop.first %}
                                   <td rowspan="{{ task.assignees.count }}" ></td>
                                   {% endif %}
-                                  <td>{{ collaborator.email }}</td>
+                                  <td>{{ collaborator.collaborator }}</td>
                                   <td>
                                     <label class="badge{% if task.status == 'PENDING' %} badge-danger {% elif task.status == 'ON IT' %} badge-warning {% elif task.status == 'COMPLETED' %} badge-success {% endif %}">{{ task.status }}</label>
                                   </td>

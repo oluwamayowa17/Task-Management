@@ -75,6 +75,22 @@
           <span class="menu-title">Create New Project</span>
         </a>
       </li>
+      <li class="nav-item menu-items">
+        <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+          <span class="menu-icon">
+            <i class="mdi mdi-laptop"></i>
+          </span>
+          <span class="menu-title">Projects</span>
+          <i class="menu-arrow"></i>
+        </a>
+        <div class="collapse" id="ui-basic">
+          <ul class="nav flex-column sub-menu">
+            <li class="nav-item"> <a class="nav-link" href="{% url 'taskapp:project' %}">All</a></li>
+            <li class="nav-item"> <a class="nav-link" href="pages/ui-features/dropdowns.html">Pending</a></li>
+            <li class="nav-item"> <a class="nav-link" href="pages/ui-features/typography.html">Completed</a></li>
+          </ul>
+        </div>
+      </li>
       
       <li class="nav-item menu-items">
         <a class="nav-link" href="{% url 'taskapp:collaboration_view' %}">
@@ -224,7 +240,7 @@
                 </div>
               </a>
               <div class="dropdown-divider"></div>
-              <a href="{% url 'taskapp:user_logout' %}" class="dropdown-item preview-item">
+              <a href="{% url 'account:user_logout' %}" class="dropdown-item preview-item">
                 <div class="preview-thumbnail">
                   <div class="preview-icon bg-dark rounded-circle">
                     <i class="mdi mdi-logout text-danger"></i>

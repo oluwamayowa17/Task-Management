@@ -62,6 +62,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     'taskapp',
+    'account',
+    'collab',
 ]
 
 MIDDLEWARE = [
@@ -106,7 +108,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = 'taskapp.User'
+AUTH_USER_MODEL = 'account.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

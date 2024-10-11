@@ -53,7 +53,7 @@
                     <div class="row">
                       <div class="col-9">
                         <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">{{all_project}}</h3>
+                          <h3 class="mb-0">{{all_project.count}}</h3>
                         </div>
                       </div>
                       <div class="col-3">
@@ -72,26 +72,7 @@
                     <div class="row">
                       <div class="col-9">
                         <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">{{in_progress}}</h3>
-                        </div>
-                      </div>
-                      <div class="col-3">
-                        <div class="icon icon-box-warning">
-                          <span class="mdi mdi-check icon-item"></span>
-                        </div>
-                      </div>
-                    </div>
-                    <h6 class="text-muted font-weight-normal">In progress</h6>
-                  </div>
-                </div>
-              </div>
-              <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-                <div class="card">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-9">
-                        <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">{{pending}}</h3>
+                          <h3 class="mb-0">{{pending.count}}</h3>
                         </div>
                       </div>
                       <div class="col-3">
@@ -110,7 +91,27 @@
                     <div class="row">
                       <div class="col-9">
                         <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">{{completed}}</h3>
+                          <h3 class="mb-0">{{in_progress.count}}</h3>
+                        </div>
+                      </div>
+                      <div class="col-3">
+                        <div class="icon icon-box-warning">
+                          <span class="mdi mdi-check icon-item"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <h6 class="text-muted font-weight-normal">In progress</h6>
+                  </div>
+                </div>
+              </div>
+             
+              <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-9">
+                        <div class="d-flex align-items-center align-self-start">
+                          <h3 class="mb-0">{{completed.count}}</h3>
                         </div>
                       </div>
                       <div class="col-3">
